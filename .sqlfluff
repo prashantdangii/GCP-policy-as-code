@@ -1,0 +1,11 @@
+[sqlfluff]
+dialect = bigquery
+max_line_length = 120
+exclude_rules = LT05, AL03, RF02
+
+[sqlfluff:indentation]
+tab_space_size = 2
+
+[sqlfluff:layout:type:comma]
+spacing_before = touch
+line_position = trailing

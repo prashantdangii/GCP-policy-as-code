@@ -1,0 +1,3 @@
+logging_project_id = "PROJECT_PREFIX-logging-hub"
+region             = "europe-west1"
+notification_email = "security-alerts@example.com"
