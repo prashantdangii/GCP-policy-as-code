@@ -1,3 +1,3 @@
-# modules/firewall-rule/examples
+# firewall-rule examples
 
-Placeholder. Filled in as the matching phase lands.
+`basic/` allows SSH from the IAP range only.

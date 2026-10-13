@@ -1,0 +1,20 @@
+scope_type                 = "organization"
+scope_id                   = "ORG_ID"
+logging_project_id         = "PROJECT_PREFIX-logging-hub"
+region                     = "europe-west1"
+dataset_location           = "EU"
+bucket_location            = "eu"
+archive_bucket_name        = "PROJECT_PREFIX-audit-archive"
+default_table_expiration_ms = 31536000000
+retention_period_seconds   = 31536000
+lock_retention             = false
+log_bucket_retention_days  = 30
+
+# Drop high-volume reads only after you have measured them.
+# exclusion_filters = [
+#   {
+#     name        = "exclude-k8s-data-read"
+#     description = "Container data-read logs dominated the bill in week 1"
+#     filter      = "resource.type=\"k8s_container\" AND logName:\"data_access\""
+#   }
+# ]

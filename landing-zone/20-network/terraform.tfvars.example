@@ -1,0 +1,10 @@
+network_project_id = "PROJECT_PREFIX-network-hub"
+region             = "europe-west1"
+flow_log_sampling  = 0.5
+enable_private_dns = true
+restrict_egress    = true
+service_project_ids = [
+  "PROJECT_PREFIX-app-prod-sample",
+  "PROJECT_PREFIX-app-nonprod-sample",
+  "PROJECT_PREFIX-data-sample",
+]

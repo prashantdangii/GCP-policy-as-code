@@ -1,0 +1,8 @@
+enable_vpc_sc       = false
+region              = "europe-west1"
+org_id              = "ORG_ID"
+billing_project     = "PROJECT_PREFIX-sec-tooling"
+data_project_number = "PROJECT_NUMBER"
+allowed_ingress_cidrs = [
+  "203.0.113.0/24",
+]

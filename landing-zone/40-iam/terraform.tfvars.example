@@ -1,0 +1,8 @@
+region                = "europe-west1"
+scope_type            = "organization"
+scope_id              = "ORG_ID"
+security_project_id   = "PROJECT_PREFIX-sec-tooling"
+security_group        = "grp-security@example.com"
+deployer_group        = "grp-deployers@example.com"
+break_glass_principal = "principalSet://goog/group/grp-break-glass@example.com"
+deployer_access_until = "2027-01-01T00:00:00Z"

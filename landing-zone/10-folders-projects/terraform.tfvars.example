@@ -1,0 +1,7 @@
+region             = "europe-west1"
+scope_type         = "organization"
+scope_id           = "ORG_ID"
+project_prefix     = "lzdemo"
+billing_account_id = "BILLING_ACCOUNT_ID"
+owner              = "platform"
+cost_center        = "security"

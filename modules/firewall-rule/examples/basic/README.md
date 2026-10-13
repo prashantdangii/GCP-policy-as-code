@@ -1,3 +1,3 @@
-# modules/firewall-rule/examples/basic
+# Basic firewall
 
-Placeholder. Filled in as the matching phase lands.
+Ingress tcp/22 from 35.235.240.0/20 to the iap-ssh tag. Logging is on. A world SSH rule does not validate.

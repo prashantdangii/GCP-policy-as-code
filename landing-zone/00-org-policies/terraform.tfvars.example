@@ -1,0 +1,19 @@
+region     = "europe-west1"
+scope_type = "organization" # organization | folder | project
+scope_id   = "ORG_ID"
+allowed_locations = [
+  "in:eu-locations",
+  "in:us-locations",
+]
+
+# exceptions = {
+#   "compute.vmExternalIpAccess" = [
+#     {
+#       parent         = "projects/PROJECT_ID"
+#       reason         = "Temporary NAT-less lab for a vendor appliance"
+#       expires        = "2026-12-31"
+#       kind           = "list"
+#       allowed_values = []
+#     }
+#   ]
+# }
