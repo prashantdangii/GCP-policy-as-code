@@ -1,0 +1,23 @@
+[project]
+name = "guardrails-tools"
+version = "0.1.0"
+description = "Plan checker and drift scanner for guardrails-gcp"
+requires-python = ">=3.11"
+dependencies = [
+  "google-cloud-asset==4.5.0",
+  "google-cloud-logging==3.16.0",
+  "rich==15.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["plan_checker/tests", "drift_scanner/tests", "tests"]
+addopts = "-q --cov=plan_checker.rules --cov=drift_scanner.rules --cov-report=term-missing --cov-fail-under=90"
+
+[tool.ruff]
+line-length = 120
+src = ["."]
+
+[tool.coverage.run]
+branch = false
+source = ["plan_checker.rules", "drift_scanner.rules"]

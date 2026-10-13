@@ -1,0 +1,64 @@
+{
+  "resources": [
+    {
+      "name": "//storage.googleapis.com/public-bucket",
+      "assetType": "storage.googleapis.com/Bucket",
+      "project": "projects/app-prod-sample",
+      "location": "eu",
+      "labels": {},
+      "data": {
+        "iamConfiguration": {"uniformBucketLevelAccess": {"enabled": false}, "publicAccessPrevention": "inherited"}
+      }
+    },
+    {
+      "name": "//compute.googleapis.com/projects/app-prod-sample/global/firewalls/allow-ssh",
+      "assetType": "compute.googleapis.com/Firewall",
+      "project": "projects/app-prod-sample",
+      "location": "global",
+      "data": {
+        "direction": "INGRESS",
+        "sourceRanges": ["0.0.0.0/0"],
+        "allowed": [{"IPProtocol": "tcp", "ports": ["22"]}]
+      }
+    },
+    {
+      "name": "//compute.googleapis.com/projects/app-prod-sample/zones/europe-west1-b/instances/public",
+      "assetType": "compute.googleapis.com/Instance",
+      "project": "projects/app-prod-sample",
+      "location": "europe-west1-b",
+      "labels": {"owner": "platform", "env": "prod", "cost-center": "security"},
+      "data": {"networkInterfaces": [{"accessConfigs": [{"natIP": "203.0.113.10"}]}]}
+    },
+    {
+      "name": "//iam.googleapis.com/projects/app-prod-sample/serviceAccounts/app/keys/deadbeef",
+      "assetType": "iam.googleapis.com/ServiceAccountKey",
+      "project": "projects/app-prod-sample",
+      "location": "global",
+      "data": {"keyType": "USER_MANAGED"}
+    },
+    {
+      "name": "//compute.googleapis.com/projects/network-hub/regions/europe-west1/subnetworks/prod",
+      "assetType": "compute.googleapis.com/Subnetwork",
+      "project": "projects/network-hub",
+      "location": "europe-west1",
+      "data": {"logConfig": {"enable": false}}
+    },
+    {
+      "name": "//storage.googleapis.com/asia-bucket",
+      "assetType": "storage.googleapis.com/Bucket",
+      "project": "projects/data-sample",
+      "location": "asia-east1",
+      "labels": {"owner": "platform", "env": "prod", "cost-center": "security"},
+      "data": {
+        "iamConfiguration": {"uniformBucketLevelAccess": {"enabled": true}, "publicAccessPrevention": "enforced"}
+      }
+    }
+  ],
+  "iam_policies": [
+    {
+      "resource": "//cloudresourcemanager.googleapis.com/projects/app-prod-sample",
+      "project": "projects/app-prod-sample",
+      "policy": {"bindings": [{"role": "roles/editor", "members": ["allUsers"]}]}
+    }
+  ]
+}

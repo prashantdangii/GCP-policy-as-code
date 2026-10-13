@@ -1,3 +1,3 @@
-# tools/plan_checker/tests/fixtures
+# Plan fixtures
 
-Placeholder. Filled in as the matching phase lands.
+`compliant.json` is a small `terraform show -json` document used by the tests. The demo plans live under `examples/`.

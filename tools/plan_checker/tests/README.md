@@ -1,3 +1,3 @@
-# tools/plan_checker/tests
+# plan_checker tests
 
-Placeholder. Filled in as the matching phase lands.
+Unit tests for each rule plus CLI exit codes. Coverage on `rules.py` is part of `pytest`.

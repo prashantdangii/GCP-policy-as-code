@@ -31,7 +31,7 @@ MODULES := \
 EXAMPLES := examples/compliant examples/non-compliant
 
 ROOT := $(abspath .)
-export PATH := $(HOME)/.local/bin:$(PATH)
+export PATH := $(ROOT)/.venv/bin:$(HOME)/.local/bin:$(PATH)
 export TF_IN_AUTOMATION := 1
 export TF_INPUT := 0
 export PYTHONPATH := $(ROOT)/tools

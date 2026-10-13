@@ -1,3 +1,3 @@
-# tools/drift_scanner/tests
+# Drift scanner tests
 
-Placeholder. Filled in as the matching phase lands.
+Fixtures only. No network. `test_drift_rules.py` covers clean assets, the non-compliant fixture, and the preventive-gap flag.
