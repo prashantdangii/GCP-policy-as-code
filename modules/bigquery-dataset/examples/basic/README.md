@@ -1,3 +1,3 @@
-# modules/bigquery-dataset/examples/basic
+# Basic dataset
 
-Placeholder. Filled in as the matching phase lands.
+Required labels and an authorized group. CMEK is optional and unset in this example.

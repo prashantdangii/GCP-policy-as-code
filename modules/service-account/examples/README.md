@@ -1,3 +1,3 @@
-# modules/service-account/examples
+# service-account examples
 
-Placeholder. Filled in as the matching phase lands.
+`basic/` creates an account and no key.

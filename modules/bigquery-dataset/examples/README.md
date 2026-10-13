@@ -1,3 +1,3 @@
-# modules/bigquery-dataset/examples
+# bigquery-dataset examples
 
-Placeholder. Filled in as the matching phase lands.
+`basic/` grants a group, not allUsers.

@@ -1,3 +1,3 @@
-# modules/compute-instance/examples/basic
+# Basic instance
 
-Placeholder. Filled in as the matching phase lands.
+No external IP, OS Login metadata, serial port off, and a non-default service account.

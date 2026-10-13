@@ -1,3 +1,3 @@
-# modules/gcs-bucket/examples/basic
+# Basic bucket
 
-Placeholder. Filled in as the matching phase lands.
+Calls the module with uniform access, public access prevention, versioning, and the required labels. No public override.

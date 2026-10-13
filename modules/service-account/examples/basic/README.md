@@ -1,3 +1,3 @@
-# modules/service-account/examples/basic
+# Basic service account
 
-Placeholder. Filled in as the matching phase lands.
+Description required. Key creation is not in this module. Bind Workload Identity by setting `wif_member`.

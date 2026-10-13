@@ -1,3 +1,3 @@
-# modules/gcs-bucket/examples
+# gcs-bucket examples
 
-Placeholder. Filled in as the matching phase lands.
+`basic/` is a private, uniform, labeled bucket.

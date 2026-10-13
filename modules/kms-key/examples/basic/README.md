@@ -1,3 +1,3 @@
-# modules/kms-key/examples/basic
+# Basic key
 
-Placeholder. Filled in as the matching phase lands.
+`prevent_destroy` is set. Admin and user are different principals. Rotation defaults to 7776000s.

@@ -1,3 +1,3 @@
-# modules/kms-key/examples
+# kms-key examples
 
-Placeholder. Filled in as the matching phase lands.
+`basic/` rotates every 90 days and splits admin from user.

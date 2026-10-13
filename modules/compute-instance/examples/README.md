@@ -1,3 +1,3 @@
-# modules/compute-instance/examples
+# compute-instance examples
 
-Placeholder. Filled in as the matching phase lands.
+`basic/` is a private Shielded VM on a custom service account.
