@@ -1,0 +1,7 @@
+project_id         = "PROJECT_PREFIX-sec-tooling"
+project_number     = "PROJECT_NUMBER"
+region             = "europe-west1"
+billing_account_id = "BILLING_ACCOUNT_ID"
+budget_amount      = 100
+currency_code      = "USD"
+# notification_channel_id = "projects/PROJECT_ID/notificationChannels/CHANNEL_ID"
