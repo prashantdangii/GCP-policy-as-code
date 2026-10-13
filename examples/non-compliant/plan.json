@@ -1,0 +1,86 @@
+{
+  "format_version": "1.2",
+  "resource_changes": [
+    {
+      "address": "google_storage_bucket.public",
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "uniform_bucket_level_access": false,
+          "public_access_prevention": "inherited",
+          "labels": {"owner": "platform", "env": "nonprod", "cost-center": "security"},
+          "encryption": [{"default_kms_key_name": "projects/PROJECT_PREFIX-app-prod-sample/locations/europe-west1/keyRings/app/cryptoKeys/data"}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_compute_firewall.ssh_world",
+      "mode": "managed",
+      "type": "google_compute_firewall",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "direction": "INGRESS",
+          "source_ranges": ["0.0.0.0/0"],
+          "allow": [{"protocol": "tcp", "ports": ["22"]}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_compute_disk.unlabeled",
+      "mode": "managed",
+      "type": "google_compute_disk",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "labels": {},
+          "disk_encryption_key": [{"kms_key_self_link": "projects/PROJECT_PREFIX-app-prod-sample/locations/europe-west1/keyRings/app/cryptoKeys/data"}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_compute_instance.exposed",
+      "mode": "managed",
+      "type": "google_compute_instance",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "machine_type": "e2-medium",
+          "labels": {"owner": "platform", "env": "nonprod", "cost-center": "security"},
+          "network_interface": [{"network": "default", "access_config": [{}]}],
+          "service_account": [{"email": "123456789012-compute@developer.gserviceaccount.com"}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_project_iam_member.editor",
+      "mode": "managed",
+      "type": "google_project_iam_member",
+      "change": {
+        "actions": ["create"],
+        "after": {"role": "roles/editor", "member": "group:app-admins@example.com"},
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "google_storage_bucket.no_cmek",
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "uniform_bucket_level_access": true,
+          "public_access_prevention": "enforced",
+          "labels": {"owner": "platform", "env": "prod", "cost-center": "security"}
+        },
+        "after_unknown": {}
+      }
+    }
+  ]
+}

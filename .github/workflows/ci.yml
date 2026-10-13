@@ -1,0 +1,329 @@
+name: ci
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.5"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install pinned CLIs
+        run: bash .github/scripts/install-tools.sh "$HOME/.local/bin"
+      - name: Put tools on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+      - name: TFLint
+        run: |
+          set -euo pipefail
+          tflint --init
+          stacks=(
+            landing-zone/bootstrap
+            landing-zone/00-org-policies
+            landing-zone/10-folders-projects
+            landing-zone/20-network
+            landing-zone/30-logging
+            landing-zone/40-iam
+            landing-zone/50-monitoring
+            landing-zone/60-finops
+            landing-zone/70-vpc-sc
+            landing-zone/80-ai-workload
+            modules/gcs-bucket
+            modules/compute-instance
+            modules/bigquery-dataset
+            modules/firewall-rule
+            modules/service-account
+            modules/kms-key
+          )
+          for dir in "${stacks[@]}"; do
+            echo "==> tflint ${dir}"
+            tflint --chdir="${dir}" --config="${PWD}/.tflint.hcl"
+          done
+      - name: Ruff
+        run: |
+          set -euo pipefail
+          python -m pip install "ruff==0.17.0"
+          ruff check tools
+      - name: Gitleaks
+        run: gitleaks detect --source . --redact --no-banner
+
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack:
+          - landing-zone/bootstrap
+          - landing-zone/00-org-policies
+          - landing-zone/10-folders-projects
+          - landing-zone/20-network
+          - landing-zone/30-logging
+          - landing-zone/40-iam
+          - landing-zone/50-monitoring
+          - landing-zone/60-finops
+          - landing-zone/70-vpc-sc
+          - landing-zone/80-ai-workload
+          - modules/gcs-bucket
+          - modules/compute-instance
+          - modules/bigquery-dataset
+          - modules/firewall-rule
+          - modules/service-account
+          - modules/kms-key
+          - examples/compliant
+          - examples/non-compliant
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.5"
+      - name: Init and validate
+        run: |
+          set -euo pipefail
+          terraform -chdir="${{ matrix.stack }}" init -backend=false -input=false
+          terraform -chdir="${{ matrix.stack }}" validate -no-color
+
+  static-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install pinned CLIs
+        run: bash .github/scripts/install-tools.sh "$HOME/.local/bin"
+      - name: Put tools on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Checkov
+        id: checkov
+        run: |
+          set -euo pipefail
+          python -m pip install "checkov==3.3.28"
+          mkdir -p scan-out
+          checkov -d landing-zone -d modules -d examples/compliant \
+            --download-external-modules false \
+            --skip-download \
+            --skip-path examples/non-compliant \
+            -o sarif \
+            --output-file-path scan-out
+      - name: Trivy
+        id: trivy
+        run: |
+          set -euo pipefail
+          trivy config \
+            --format sarif \
+            --output trivy.sarif \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --skip-dirs examples/non-compliant \
+            --skip-dirs .venv \
+            .
+      - name: Upload Checkov SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: scan-out/results_sarif.sarif
+          category: checkov
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.5"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install pinned CLIs
+        run: bash .github/scripts/install-tools.sh "$HOME/.local/bin"
+      - name: Put tools on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Sentinel
+        run: sentinel test -verbose
+        working-directory: policies/sentinel
+      - name: OPA and Conftest
+        run: |
+          set -euo pipefail
+          opa test policies/opa -v
+          conftest verify -p policies/opa
+      - name: pytest
+        run: |
+          set -euo pipefail
+          python -m pip install -r requirements.txt
+          python -m pytest
+        working-directory: tools
+      - name: terraform test
+        run: |
+          set -euo pipefail
+          modules=(
+            modules/gcs-bucket
+            modules/compute-instance
+            modules/bigquery-dataset
+            modules/firewall-rule
+            modules/service-account
+            modules/kms-key
+          )
+          for dir in "${modules[@]}"; do
+            echo "==> terraform test ${dir}"
+            terraform -chdir="${dir}" init -backend=false -input=false
+            terraform -chdir="${dir}" test -no-color
+          done
+
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    if: vars.WIF_PROVIDER != '' && vars.WIF_SERVICE_ACCOUNT != '' && vars.TF_STACK != '' && vars.TF_STATE_BUCKET != ''
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.5"
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+      - name: Plan
+        env:
+          TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+          TF_VAR_github_repository: ${{ github.repository }}
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+        run: |
+          set -euo pipefail
+          stack="${{ vars.TF_STACK }}"
+          case "${stack}" in
+            landing-zone/*|modules/*|examples/compliant) ;;
+            *) echo "TF_STACK must be a landing-zone, module, or examples/compliant directory" && exit 1 ;;
+          esac
+          terraform -chdir="${stack}" init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+          terraform -chdir="${stack}" plan -input=false -out=tfplan
+          terraform -chdir="${stack}" show -json tfplan > tfplan.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: tfplan.json
+          retention-days: 5
+
+  plan-skipped:
+    runs-on: ubuntu-latest
+    if: vars.WIF_PROVIDER == '' || vars.WIF_SERVICE_ACCOUNT == '' || vars.TF_STACK == '' || vars.TF_STATE_BUCKET == ''
+    steps:
+      - name: Skip plan
+        run: echo "WIF_PROVIDER, WIF_SERVICE_ACCOUNT, TF_STACK, or TF_STATE_BUCKET is unset. Skipping terraform plan. The offline example-policy-demo job still runs."
+
+  policy-check:
+    runs-on: ubuntu-latest
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install pinned CLIs
+        run: bash .github/scripts/install-tools.sh "$HOME/.local/bin"
+      - name: Put tools on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+      - name: Conftest and plan_checker
+        run: |
+          set -euo pipefail
+          python -m pip install -r tools/requirements.txt
+          conftest test tfplan.json -p policies/opa --all-namespaces | tee conftest.txt
+          PYTHONPATH=tools python -m plan_checker.cli tfplan.json --format text --fail-on high | tee plan-checker.txt
+      - name: Comment on the pull request
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const conftest = fs.existsSync('conftest.txt') ? fs.readFileSync('conftest.txt', 'utf8') : '';
+            const checker = fs.existsSync('plan-checker.txt') ? fs.readFileSync('plan-checker.txt', 'utf8') : '';
+            const body = [
+              '## Policy check',
+              '',
+              'Conftest (OPA) and plan_checker ran against the Terraform plan for this pull request.',
+              '',
+              '```',
+              conftest.trim(),
+              checker.trim(),
+              '```',
+            ].join('\n').slice(0, 60000);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+  example-policy-demo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install pinned CLIs
+        run: bash .github/scripts/install-tools.sh "$HOME/.local/bin"
+      - name: Put tools on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Offline policy demo
+        env:
+          PYTHONPATH: tools
+        run: |
+          set -euo pipefail
+          python -m pip install -r tools/requirements.txt
+          python -m policy_demo | tee policy-demo.txt
+      - name: Comment on the pull request
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const demo = fs.readFileSync('policy-demo.txt', 'utf8');
+            const body = [
+              '## Offline policy demo',
+              '',
+              'No cloud credentials. `examples/compliant/plan.json` passed. `examples/non-compliant/plan.json` failed for GCS-001, FW-001, LBL-001, VM-001, VM-002, IAM-001, and CMEK-001.',
+              '',
+              '```',
+              demo.trim(),
+              '```',
+            ].join('\n').slice(0, 60000);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

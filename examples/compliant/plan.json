@@ -1,0 +1,90 @@
+{
+  "format_version": "1.2",
+  "resource_changes": [
+    {
+      "address": "module.bucket.google_storage_bucket.this",
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "name": "project-prefix-app-data",
+          "location": "europe-west1",
+          "uniform_bucket_level_access": true,
+          "public_access_prevention": "enforced",
+          "labels": {"owner": "platform", "env": "prod", "cost-center": "security"},
+          "encryption": [{"default_kms_key_name": "projects/PROJECT_PREFIX-app-prod-sample/locations/europe-west1/keyRings/app/cryptoKeys/data"}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "module.dataset.google_bigquery_dataset.this",
+      "mode": "managed",
+      "type": "google_bigquery_dataset",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "dataset_id": "app_analytics",
+          "location": "EU",
+          "labels": {"owner": "platform", "env": "prod", "cost-center": "security"},
+          "default_encryption_configuration": [{"kms_key_name": "projects/PROJECT_PREFIX-app-prod-sample/locations/europe-west1/keyRings/app/cryptoKeys/data"}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "module.instance.google_compute_instance.this",
+      "mode": "managed",
+      "type": "google_compute_instance",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "name": "app",
+          "machine_type": "e2-medium",
+          "labels": {"owner": "platform", "env": "prod", "cost-center": "security"},
+          "network_interface": [{"subnetwork": "prod"}],
+          "service_account": [{"email": "app-runtime@PROJECT_PREFIX-app-prod-sample.iam.gserviceaccount.com"}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "module.iap_ssh.google_compute_firewall.this",
+      "mode": "managed",
+      "type": "google_compute_firewall",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "direction": "INGRESS",
+          "source_ranges": ["35.235.240.0/20"],
+          "allow": [{"protocol": "tcp", "ports": ["22"]}]
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "module.key.google_kms_crypto_key_iam_member.admin",
+      "mode": "managed",
+      "type": "google_kms_crypto_key_iam_member",
+      "change": {
+        "actions": ["create"],
+        "after": {"role": "roles/cloudkms.admin", "member": "group:kms-admins@example.com"},
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "module.key.google_kms_crypto_key_iam_member.user",
+      "mode": "managed",
+      "type": "google_kms_crypto_key_iam_member",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "role": "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+          "member": "serviceAccount:app-runtime@PROJECT_PREFIX-app-prod-sample.iam.gserviceaccount.com"
+        },
+        "after_unknown": {}
+      }
+    }
+  ]
+}

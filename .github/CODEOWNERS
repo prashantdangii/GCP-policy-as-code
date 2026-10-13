@@ -1,0 +1,7 @@
+# Replace GITHUB_ORG with the real organization, and create the security team,
+# before relying on this file for review. Branch protection is a human step
+# documented in docs/runbook.md.
+
+/policies/ @GITHUB_ORG/security
+/landing-zone/ @GITHUB_ORG/security
+/.github/workflows/ @GITHUB_ORG/security

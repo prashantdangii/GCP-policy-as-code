@@ -1,0 +1,61 @@
+name: apply
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: production
+    if: vars.WIF_PROVIDER != '' && vars.WIF_SERVICE_ACCOUNT != '' && vars.TF_STACK != '' && vars.TF_STATE_BUCKET != ''
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.5"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install pinned CLIs
+        run: bash .github/scripts/install-tools.sh "$HOME/.local/bin"
+      - name: Put tools on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+      - name: Plan, policy check, apply
+        env:
+          TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+          TF_VAR_github_repository: ${{ github.repository }}
+          TF_IN_AUTOMATION: "1"
+          TF_INPUT: "0"
+          PYTHONPATH: tools
+        run: |
+          set -euo pipefail
+          python -m pip install -r tools/requirements.txt
+          stack="${{ vars.TF_STACK }}"
+          case "${stack}" in
+            landing-zone/*) ;;
+            *) echo "TF_STACK must be a landing-zone directory" && exit 1 ;;
+          esac
+          terraform -chdir="${stack}" init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+          terraform -chdir="${stack}" plan -input=false -out=tfplan
+          terraform -chdir="${stack}" show -json tfplan > tfplan.json
+          conftest test tfplan.json -p policies/opa --all-namespaces
+          python -m plan_checker.cli tfplan.json --format text --fail-on high
+          terraform -chdir="${stack}" apply -input=false tfplan
+
+  apply-skipped:
+    runs-on: ubuntu-latest
+    if: vars.WIF_PROVIDER == '' || vars.WIF_SERVICE_ACCOUNT == '' || vars.TF_STACK == '' || vars.TF_STATE_BUCKET == ''
+    steps:
+      - name: Skip apply
+        run: echo "Apply skipped. Set WIF_PROVIDER, WIF_SERVICE_ACCOUNT, TF_STACK, and TF_STATE_BUCKET, and add reviewers on the production environment. See docs/runbook.md."
