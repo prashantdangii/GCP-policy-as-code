@@ -1,0 +1,6 @@
+enable_ai_workload = false
+project_id         = "PROJECT_PREFIX-data-sample"
+region             = "europe-west1"
+# network_name       = "shared-vpc"
+# network_project_id = "PROJECT_PREFIX-network-hub"
+# kms_key_name       = "projects/PROJECT_ID/locations/europe-west1/keyRings/data/cryptoKeys/app"
