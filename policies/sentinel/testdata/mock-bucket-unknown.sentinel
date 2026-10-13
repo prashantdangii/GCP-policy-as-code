@@ -1,0 +1,26 @@
+resource_changes = {
+	"google_storage_bucket.later": {
+		"address": "google_storage_bucket.later",
+		"mode": "managed",
+		"type": "google_storage_bucket",
+		"name": "later",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"uniform_bucket_level_access": null,
+				"public_access_prevention": null,
+				"labels": {
+					"owner": "platform",
+					"env": "prod",
+					"cost-center": "security",
+				},
+			},
+			"after_unknown": {
+				"uniform_bucket_level_access": true,
+				"public_access_prevention": true,
+			},
+		},
+	},
+}

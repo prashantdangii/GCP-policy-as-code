@@ -1,0 +1,15 @@
+resource_changes = {
+	"google_compute_instance.gone": {
+		"address": "google_compute_instance.gone",
+		"mode": "managed",
+		"type": "google_compute_instance",
+		"name": "gone",
+		"change": {
+			"actions": [
+				"delete",
+			],
+			"after": null,
+			"after_unknown": {},
+		},
+	},
+}

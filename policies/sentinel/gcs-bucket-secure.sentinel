@@ -1,0 +1,42 @@
+# Control: GCS-001
+# Intent: Cloud Storage buckets use uniform access and block public access.
+# Risk: Object ACLs and inherited public access are a common data-exposure path.
+# Source: CIS Google Cloud Platform Foundation Benchmark (Cloud Storage), NIST 800-53 AC-3, SC-7.
+# Enforcement: hard-mandatory. A public or ACL-managed bucket is not an acceptable rollout exception.
+# Remediate: use modules/gcs-bucket, or set uniform_bucket_level_access = true and
+#            public_access_prevention = "enforced".
+# Exception: do not waive this control. If a bucket must be public, stop and talk to security.
+
+import "common" as fn
+
+buckets = fn.find_resources("google_storage_bucket")
+
+uniform_violations = {}
+pap_violations = {}
+
+for buckets as address, rc {
+	after = fn.after_of(rc)
+	unknown = fn.unknown_of(rc)
+
+	if (unknown["uniform_bucket_level_access"] else false) is true {
+		uniform_violations[address] = "uniform_bucket_level_access is unknown; set it to true explicitly"
+	} else if (after["uniform_bucket_level_access"] else false) is not true {
+		uniform_violations[address] = "uniform_bucket_level_access must be true"
+	}
+
+	if (unknown["public_access_prevention"] else false) is true {
+		pap_violations[address] = "public_access_prevention is unknown; set it to enforced"
+	} else if (after["public_access_prevention"] else "inherited") is not "enforced" {
+		pap_violations[address] = "public_access_prevention must be enforced"
+	}
+}
+
+print_violations = func() {
+	fn.print_findings("GCS-001", uniform_violations)
+	fn.print_findings("GCS-001", pap_violations)
+	return true
+}
+
+uniform_access = rule { length(uniform_violations) is 0 }
+public_access_prevention = rule { length(pap_violations) is 0 }
+main = rule { print_violations() and (uniform_access or public_access_prevention) and uniform_access and public_access_prevention }

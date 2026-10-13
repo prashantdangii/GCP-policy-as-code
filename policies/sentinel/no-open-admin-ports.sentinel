@@ -1,0 +1,72 @@
+# Control: FW-001
+# Intent: No ingress allow of SSH, RDP, all TCP ports, or protocol all from the internet.
+# Risk: 0.0.0.0/0 on tcp/22 or tcp/3389 is direct admin exposure.
+# Source: CIS GCP (networking), NIST 800-53 SC-7, AC-17.
+# Enforcement: hard-mandatory.
+# Remediate: allow 35.235.240.0/20 (IAP) to tagged instances via modules/firewall-rule.
+# Exception: do not waive. A bastion with a public IP is the wrong design on this landing zone.
+
+import "common" as fn
+
+resources = fn.find_types([
+	"google_compute_firewall",
+	"google_compute_firewall_policy_rule",
+	"google_compute_network_firewall_policy_rule",
+])
+
+violations = {}
+
+admin_ports = func(protocol, ports) {
+	port_list = fn.as_list(ports)
+	if protocol in ["all", "ALL"] {
+		return true
+	}
+	if protocol in ["tcp", "TCP"] and length(port_list) is 0 {
+		return true
+	}
+	for port_list as port {
+		if port in ["22", "3389"] {
+			return true
+		}
+	}
+	return false
+}
+
+for resources as address, rc {
+	after = fn.after_of(rc)
+	if (after["disabled"] else false) is true {
+		continue
+	}
+
+	direction = after["direction"] else "INGRESS"
+	if direction is not "INGRESS" {
+		continue
+	}
+
+	if rc.type is "google_compute_firewall" {
+		if fn.is_world(after["source_ranges"] else []) {
+			for fn.as_list(after["allow"] else []) as allow {
+				if admin_ports(allow["protocol"] else "", allow["ports"] else []) {
+					violations[address] = "ingress allow of admin ports from 0.0.0.0/0 or ::/0"
+				}
+			}
+		}
+	} else {
+		action = after["action"] else ""
+		match = fn.block(after["match"] else {})
+		if action in ["allow", "ALLOW"] and fn.is_world(match["src_ip_ranges"] else []) {
+			for fn.as_list(match["layer4_configs"] else []) as layer4 {
+				if admin_ports(layer4["ip_protocol"] else "", layer4["ports"] else []) {
+					violations[address] = "ingress allow of admin ports from 0.0.0.0/0 or ::/0"
+				}
+			}
+		}
+	}
+}
+
+print_violations = func() {
+	return fn.print_findings("FW-001", violations)
+}
+
+no_open_admin = rule { length(violations) is 0 }
+main = rule { print_violations() and no_open_admin }

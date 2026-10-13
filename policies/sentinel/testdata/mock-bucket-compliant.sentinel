@@ -1,0 +1,28 @@
+resource_changes = {
+	"google_storage_bucket.good": {
+		"address": "google_storage_bucket.good",
+		"mode": "managed",
+		"type": "google_storage_bucket",
+		"name": "good",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"uniform_bucket_level_access": true,
+				"public_access_prevention": "enforced",
+				"labels": {
+					"owner": "platform",
+					"env": "prod",
+					"cost-center": "security",
+				},
+				"encryption": [
+					{
+						"default_kms_key_name": "projects/p/locations/eu/keyRings/r/cryptoKeys/k",
+					},
+				],
+			},
+			"after_unknown": {},
+		},
+	},
+}

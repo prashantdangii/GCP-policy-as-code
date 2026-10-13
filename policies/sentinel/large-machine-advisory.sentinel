@@ -1,0 +1,43 @@
+# Control: FIN-001
+# Intent: Warn when a VM uses a very large machine type.
+# Risk: A single n2-standard-64 can dominate a lab budget before anyone notices.
+# Source: FinOps Foundation tagging and rate optimization. Not a CIS control.
+# Enforcement: advisory.
+# Remediate: pick a smaller type, or confirm the budget owner has accepted the cost.
+# Exception: advisory does not block. Mention the machine type in the pull request cost box.
+
+import "common" as fn
+import "strings"
+
+instances = fn.find_resources("google_compute_instance")
+violations = {}
+
+large = func(machine_type) {
+	if machine_type is null {
+		return false
+	}
+	if "custom-" in machine_type {
+		return true
+	}
+	for ["-32", "-48", "-64", "-96", "-128"] as suffix {
+		if strings.has_suffix(machine_type, suffix) {
+			return true
+		}
+	}
+	return false
+}
+
+for instances as address, rc {
+	after = fn.after_of(rc)
+	machine_type = after["machine_type"] else ""
+	if large(machine_type) {
+		violations[address] = "machine type looks expensive; confirm cost before apply"
+	}
+}
+
+print_violations = func() {
+	return fn.print_findings("FIN-001", violations)
+}
+
+machine_size_ok = rule { length(violations) is 0 }
+main = rule { print_violations() and machine_size_ok }

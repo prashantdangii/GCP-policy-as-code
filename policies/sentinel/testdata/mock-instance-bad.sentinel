@@ -1,0 +1,32 @@
+resource_changes = {
+	"google_compute_instance.bad": {
+		"address": "google_compute_instance.bad",
+		"mode": "managed",
+		"type": "google_compute_instance",
+		"name": "bad",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"machine_type": "n2-standard-64",
+				"labels": {},
+				"network_interface": [
+					{
+						"access_config": [
+							{
+								"nat_ip": "203.0.113.10",
+							},
+						],
+					},
+				],
+				"service_account": [
+					{
+						"email": "123456789-compute@developer.gserviceaccount.com",
+					},
+				],
+			},
+			"after_unknown": {},
+		},
+	},
+}

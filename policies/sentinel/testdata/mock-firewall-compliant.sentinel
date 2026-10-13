@@ -1,0 +1,30 @@
+resource_changes = {
+	"google_compute_firewall.iap": {
+		"address": "google_compute_firewall.iap",
+		"mode": "managed",
+		"type": "google_compute_firewall",
+		"name": "iap",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"direction": "INGRESS",
+				"source_ranges": [
+					"35.235.240.0/20",
+				],
+				"allow": [
+					{
+						"protocol": "tcp",
+						"ports": [
+							"22",
+							"3389",
+						],
+					},
+				],
+				"disabled": false,
+			},
+			"after_unknown": {},
+		},
+	},
+}

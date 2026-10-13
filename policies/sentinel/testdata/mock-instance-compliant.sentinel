@@ -1,0 +1,36 @@
+resource_changes = {
+	"google_compute_instance.good": {
+		"address": "google_compute_instance.good",
+		"mode": "managed",
+		"type": "google_compute_instance",
+		"name": "good",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"machine_type": "e2-medium",
+				"labels": {
+					"owner": "platform",
+					"env": "prod",
+					"cost-center": "security",
+				},
+				"network_interface": [
+					{
+						"subnetwork": "prod",
+						"access_config": [],
+					},
+				],
+				"service_account": [
+					{
+						"email": "app-runtime@example.iam.gserviceaccount.com",
+						"scopes": [
+							"https://www.googleapis.com/auth/cloud-platform",
+						],
+					},
+				],
+			},
+			"after_unknown": {},
+		},
+	},
+}

@@ -1,0 +1,17 @@
+resource_changes = {
+	"google_workbench_instance.bad": {
+		"address": "google_workbench_instance.bad",
+		"mode": "managed",
+		"type": "google_workbench_instance",
+		"name": "bad",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"service_account": "123-compute@developer.gserviceaccount.com",
+			},
+			"after_unknown": {},
+		},
+	},
+}

@@ -1,0 +1,17 @@
+resource_changes = {
+	"google_notebooks_instance.good": {
+		"address": "google_notebooks_instance.good",
+		"mode": "managed",
+		"type": "google_notebooks_instance",
+		"name": "good",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"service_account": "ai-runtime@example.iam.gserviceaccount.com",
+			},
+			"after_unknown": {},
+		},
+	},
+}

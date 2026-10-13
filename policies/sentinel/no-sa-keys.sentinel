@@ -1,0 +1,24 @@
+# Control: IAM-003
+# Intent: Terraform does not create google_service_account_key resources.
+# Risk: Downloaded JSON keys are long-lived credentials that outlive the workflow that needed them.
+# Source: CIS GCP (service account keys), NIST 800-53 IA-5. This rule exists because the drift
+#         scanner found user-managed keys. See docs/adr/0005-detective-to-preventive-loop.md.
+# Enforcement: hard-mandatory.
+# Remediate: delete the key resource and use Workload Identity Federation.
+# Exception: do not waive. The org policy iam.disableServiceAccountKeyCreation is the platform control.
+
+import "common" as fn
+
+keys = fn.find_resources("google_service_account_key")
+violations = {}
+
+for keys as address, rc {
+	violations[address] = "service account keys are not allowed; use Workload Identity Federation"
+}
+
+print_violations = func() {
+	return fn.print_findings("IAM-003", violations)
+}
+
+no_sa_keys = rule { length(violations) is 0 }
+main = rule { print_violations() and no_sa_keys }

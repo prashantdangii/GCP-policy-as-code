@@ -1,0 +1,17 @@
+resource_changes = {
+	"google_service_account.ok": {
+		"address": "google_service_account.ok",
+		"mode": "managed",
+		"type": "google_service_account",
+		"name": "ok",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"account_id": "app-runtime",
+			},
+			"after_unknown": {},
+		},
+	},
+}

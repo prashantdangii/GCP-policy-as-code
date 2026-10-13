@@ -1,0 +1,38 @@
+# Control: AI-001
+# Intent: Vertex notebooks and workbench instances use a dedicated service account.
+# Risk: The default Compute service account is broader than a notebook needs, and a prompt-injected
+#       tool then inherits that breadth.
+# Source: NIST 800-53 AC-6. Agent-specific rationale is in docs/threat-model-agentic-ai.md.
+# Enforcement: advisory. Notebook resource schemas differ by product generation.
+# Remediate: set a user-managed service account such as the ai-runtime account in 80-ai-workload.
+# Exception: advisory. Do not attach Editor to make the notebook "just work".
+
+import "common" as fn
+import "types"
+
+resources = fn.find_types([
+	"google_notebooks_instance",
+	"google_workbench_instance",
+	"google_notebooks_runtime",
+])
+
+violations = {}
+
+for resources as address, rc {
+	after = fn.after_of(rc)
+	raw = after["service_account"] else ""
+	email = raw
+	if types.type_of(raw) is "map" {
+		email = raw["email"] else ""
+	}
+	if fn.is_default_compute_sa(email) {
+		violations[address] = "Vertex notebook or workbench must set a non-default service account"
+	}
+}
+
+print_violations = func() {
+	return fn.print_findings("AI-001", violations)
+}
+
+dedicated_sa = rule { length(violations) is 0 }
+main = rule { print_violations() and dedicated_sa }

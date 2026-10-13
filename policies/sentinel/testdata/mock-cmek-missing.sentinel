@@ -1,0 +1,17 @@
+resource_changes = {
+	"google_storage_bucket.plain": {
+		"address": "google_storage_bucket.plain",
+		"mode": "managed",
+		"type": "google_storage_bucket",
+		"name": "plain",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"encryption": [],
+			},
+			"after_unknown": {},
+		},
+	},
+}

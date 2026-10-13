@@ -1,0 +1,357 @@
+PASS - vertex-non-default-sa.sentinel
+  PASS - test/vertex-non-default-sa/fail.hcl
+
+
+    logs:
+      AI-001 google_workbench_instance.bad -> Vertex notebook or workbench must set a non-default service account
+    trace:
+      vertex-non-default-sa.sentinel:38:1 - Rule "main"
+        Value:
+          false
+
+      vertex-non-default-sa.sentinel:37:1 - Rule "dedicated_sa"
+        Value:
+          false
+  PASS - test/vertex-non-default-sa/pass.hcl
+
+    trace:
+      vertex-non-default-sa.sentinel:38:1 - Rule "main"
+        Value:
+          true
+
+      vertex-non-default-sa.sentinel:37:1 - Rule "dedicated_sa"
+        Value:
+          true
+PASS - no-sa-keys.sentinel
+  PASS - test/no-sa-keys/fail.hcl
+
+
+    logs:
+      IAM-003 google_service_account_key.bad -> service account keys are not allowed; use Workload Identity Federation
+    trace:
+      no-sa-keys.sentinel:24:1 - Rule "main"
+        Value:
+          false
+
+      no-sa-keys.sentinel:23:1 - Rule "no_sa_keys"
+        Value:
+          false
+  PASS - test/no-sa-keys/pass.hcl
+
+    trace:
+      no-sa-keys.sentinel:24:1 - Rule "main"
+        Value:
+          true
+
+      no-sa-keys.sentinel:23:1 - Rule "no_sa_keys"
+        Value:
+          true
+PASS - large-machine-advisory.sentinel
+  PASS - test/large-machine-advisory/fail.hcl
+
+
+    logs:
+      FIN-001 google_compute_instance.big -> machine type looks expensive; confirm cost before apply
+    trace:
+      large-machine-advisory.sentinel:43:1 - Rule "main"
+        Value:
+          false
+
+      large-machine-advisory.sentinel:42:1 - Rule "machine_size_ok"
+        Value:
+          false
+  PASS - test/large-machine-advisory/pass.hcl
+
+    trace:
+      large-machine-advisory.sentinel:43:1 - Rule "main"
+        Value:
+          true
+
+      large-machine-advisory.sentinel:42:1 - Rule "machine_size_ok"
+        Value:
+          true
+PASS - cmek-required.sentinel
+  PASS - test/cmek-required/edge-delete.hcl
+
+    trace:
+      cmek-required.sentinel:60:1 - Rule "main"
+        Value:
+          true
+
+      cmek-required.sentinel:59:1 - Rule "cmek_set"
+        Value:
+          true
+  PASS - test/cmek-required/fail.hcl
+
+
+    logs:
+      CMEK-001 google_storage_bucket.plain -> bucket is missing encryption.default_kms_key_name
+    trace:
+      cmek-required.sentinel:60:1 - Rule "main"
+        Value:
+          false
+
+      cmek-required.sentinel:59:1 - Rule "cmek_set"
+        Value:
+          false
+  PASS - test/cmek-required/pass.hcl
+
+    trace:
+      cmek-required.sentinel:60:1 - Rule "main"
+        Value:
+          true
+
+      cmek-required.sentinel:59:1 - Rule "cmek_set"
+        Value:
+          true
+PASS - required-labels.sentinel
+  PASS - test/required-labels/edge-noop.hcl
+
+    trace:
+      required-labels.sentinel:50:1 - Rule "main"
+        Value:
+          true
+
+      required-labels.sentinel:49:1 - Rule "labels_present"
+        Value:
+          true
+  PASS - test/required-labels/fail.hcl
+
+
+    logs:
+      LBL-001 google_compute_instance.bare -> missing labels owner, env, or cost-center
+    trace:
+      required-labels.sentinel:50:1 - Rule "main"
+        Value:
+          false
+
+      required-labels.sentinel:49:1 - Rule "labels_present"
+        Value:
+          false
+  PASS - test/required-labels/pass.hcl
+
+    trace:
+      required-labels.sentinel:50:1 - Rule "main"
+        Value:
+          true
+
+      required-labels.sentinel:49:1 - Rule "labels_present"
+        Value:
+          true
+PASS - no-external-ip-no-default-sa.sentinel
+  PASS - test/no-external-ip-no-default-sa/edge-delete.hcl
+
+    trace:
+      no-external-ip-no-default-sa.sentinel:56:1 - Rule "main"
+        Value:
+          true
+
+      no-external-ip-no-default-sa.sentinel:55:1 - Rule "no_default_sa"
+        Value:
+          true
+
+      no-external-ip-no-default-sa.sentinel:54:1 - Rule "no_external_ip"
+        Value:
+          true
+  PASS - test/no-external-ip-no-default-sa/fail.hcl
+
+
+    logs:
+      VM-001 google_compute_instance.bad -> access_config assigns an external IP
+      VM-002 google_compute_instance.bad -> service account is empty or the default Compute Engine account
+    trace:
+      no-external-ip-no-default-sa.sentinel:56:1 - Rule "main"
+        Value:
+          false
+
+      no-external-ip-no-default-sa.sentinel:55:1 - Rule "no_default_sa"
+        Value:
+          false
+
+      no-external-ip-no-default-sa.sentinel:54:1 - Rule "no_external_ip"
+        Value:
+          false
+  PASS - test/no-external-ip-no-default-sa/pass.hcl
+
+    trace:
+      no-external-ip-no-default-sa.sentinel:56:1 - Rule "main"
+        Value:
+          true
+
+      no-external-ip-no-default-sa.sentinel:55:1 - Rule "no_default_sa"
+        Value:
+          true
+
+      no-external-ip-no-default-sa.sentinel:54:1 - Rule "no_external_ip"
+        Value:
+          true
+PASS - no-open-admin-ports.sentinel
+  PASS - test/no-open-admin-ports/edge-delete.hcl
+
+    trace:
+      no-open-admin-ports.sentinel:72:1 - Rule "main"
+        Value:
+          true
+
+      no-open-admin-ports.sentinel:71:1 - Rule "no_open_admin"
+        Value:
+          true
+  PASS - test/no-open-admin-ports/edge-egress.hcl
+
+    trace:
+      no-open-admin-ports.sentinel:72:1 - Rule "main"
+        Value:
+          true
+
+      no-open-admin-ports.sentinel:71:1 - Rule "no_open_admin"
+        Value:
+          true
+  PASS - test/no-open-admin-ports/fail.hcl
+
+
+    logs:
+      FW-001 google_compute_firewall.bad -> ingress allow of admin ports from 0.0.0.0/0 or ::/0
+      FW-001 google_compute_network_firewall_policy_rule.bad -> ingress allow of admin ports from 0.0.0.0/0 or ::/0
+    trace:
+      no-open-admin-ports.sentinel:72:1 - Rule "main"
+        Value:
+          false
+
+      no-open-admin-ports.sentinel:71:1 - Rule "no_open_admin"
+        Value:
+          false
+  PASS - test/no-open-admin-ports/pass.hcl
+
+    trace:
+      no-open-admin-ports.sentinel:72:1 - Rule "main"
+        Value:
+          true
+
+      no-open-admin-ports.sentinel:71:1 - Rule "no_open_admin"
+        Value:
+          true
+PASS - gcs-bucket-secure.sentinel
+  PASS - test/gcs-bucket-secure/edge-delete.hcl
+
+    trace:
+      gcs-bucket-secure.sentinel:42:1 - Rule "main"
+        Value:
+          true
+
+      gcs-bucket-secure.sentinel:41:1 - Rule "public_access_prevention"
+        Value:
+          true
+
+      gcs-bucket-secure.sentinel:40:1 - Rule "uniform_access"
+        Value:
+          true
+  PASS - test/gcs-bucket-secure/edge-unknown.hcl
+
+
+    logs:
+      GCS-001 google_storage_bucket.later -> uniform_bucket_level_access is unknown; set it to true explicitly
+      GCS-001 google_storage_bucket.later -> public_access_prevention is unknown; set it to enforced
+    trace:
+      gcs-bucket-secure.sentinel:42:1 - Rule "main"
+        Value:
+          false
+
+      gcs-bucket-secure.sentinel:41:1 - Rule "public_access_prevention"
+        Value:
+          false
+
+      gcs-bucket-secure.sentinel:40:1 - Rule "uniform_access"
+        Value:
+          false
+  PASS - test/gcs-bucket-secure/fail.hcl
+
+
+    logs:
+      GCS-001 google_storage_bucket.bad -> uniform_bucket_level_access must be true
+      GCS-001 google_storage_bucket.bad -> public_access_prevention must be enforced
+    trace:
+      gcs-bucket-secure.sentinel:42:1 - Rule "main"
+        Value:
+          false
+
+      gcs-bucket-secure.sentinel:41:1 - Rule "public_access_prevention"
+        Value:
+          false
+
+      gcs-bucket-secure.sentinel:40:1 - Rule "uniform_access"
+        Value:
+          false
+  PASS - test/gcs-bucket-secure/pass.hcl
+
+    trace:
+      gcs-bucket-secure.sentinel:42:1 - Rule "main"
+        Value:
+          true
+
+      gcs-bucket-secure.sentinel:41:1 - Rule "public_access_prevention"
+        Value:
+          true
+
+      gcs-bucket-secure.sentinel:40:1 - Rule "uniform_access"
+        Value:
+          true
+PASS - no-primitive-roles.sentinel
+  PASS - test/no-primitive-roles/edge-delete.hcl
+
+    trace:
+      no-primitive-roles.sentinel:76:1 - Rule "main"
+        Value:
+          true
+
+      no-primitive-roles.sentinel:74:1 - Rule "no_primitive_roles"
+        Value:
+          true
+
+      no-primitive-roles.sentinel:75:1 - Rule "no_public_members"
+        Value:
+          true
+  PASS - test/no-primitive-roles/fail-allusers.hcl
+
+
+    logs:
+      IAM-002 google_storage_bucket_iam_member.public -> member is allUsers or allAuthenticatedUsers
+    trace:
+      no-primitive-roles.sentinel:76:1 - Rule "main"
+        Value:
+          false
+
+      no-primitive-roles.sentinel:74:1 - Rule "no_primitive_roles"
+        Value:
+          true
+
+      no-primitive-roles.sentinel:75:1 - Rule "no_public_members"
+        Value:
+          false
+  PASS - test/no-primitive-roles/fail.hcl
+
+
+    logs:
+      IAM-001 google_project_iam_binding.editor -> role is owner or editor
+    trace:
+      no-primitive-roles.sentinel:76:1 - Rule "main"
+        Value:
+          false
+
+      no-primitive-roles.sentinel:74:1 - Rule "no_primitive_roles"
+        Value:
+          false
+  PASS - test/no-primitive-roles/pass.hcl
+
+    trace:
+      no-primitive-roles.sentinel:76:1 - Rule "main"
+        Value:
+          true
+
+      no-primitive-roles.sentinel:74:1 - Rule "no_primitive_roles"
+        Value:
+          true
+
+      no-primitive-roles.sentinel:75:1 - Rule "no_public_members"
+        Value:
+          true
+9 tests completed in 10.791704ms

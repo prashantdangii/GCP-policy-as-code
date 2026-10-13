@@ -1,0 +1,17 @@
+resource_changes = {
+	"google_service_account_key.bad": {
+		"address": "google_service_account_key.bad",
+		"mode": "managed",
+		"type": "google_service_account_key",
+		"name": "bad",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"service_account_id": "projects/p/serviceAccounts/app@example.iam.gserviceaccount.com",
+			},
+			"after_unknown": {},
+		},
+	},
+}

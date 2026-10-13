@@ -1,0 +1,50 @@
+# Control: LBL-001
+# Intent: Labelable resources carry owner, env, and cost-center.
+# Risk: Unlabeled resources cannot be allocated or owned during an incident.
+# Source: NIST 800-53 CM-8, company tagging standard. CIS does not require these exact keys.
+# Enforcement: soft-mandatory. A reviewer can override with a reason. Do not promote to hard
+#              until the violation rate on existing estates is low. See docs/rollout-strategy.md.
+# Remediate: set labels.owner, labels.env (prod|nonprod|shared), and labels.cost-center.
+# Exception: soft-mandatory override in HCP Terraform, with an expiry, recorded in the catalog.
+
+import "common" as fn
+
+required = ["owner", "env", "cost-center"]
+
+resources = fn.find_types([
+	"google_storage_bucket",
+	"google_compute_instance",
+	"google_compute_disk",
+	"google_bigquery_dataset",
+	"google_sql_database_instance",
+	"google_project",
+	"google_vertex_ai_endpoint",
+])
+
+violations = {}
+
+for resources as address, rc {
+	labels = fn.labels_of(rc)
+	unknown = fn.unknown_of(rc)
+	if (unknown["labels"] else false) is true {
+		violations[address] = "labels are unknown; set owner, env, and cost-center explicitly"
+		continue
+	}
+	missing = {}
+	for required as key {
+		value = labels[key] else ""
+		if value is null or value is "" {
+			missing[key] = true
+		}
+	}
+	if length(missing) > 0 {
+		violations[address] = "missing labels owner, env, or cost-center"
+	}
+}
+
+print_violations = func() {
+	return fn.print_findings("LBL-001", violations)
+}
+
+labels_present = rule { length(violations) is 0 }
+main = rule { print_violations() and labels_present }

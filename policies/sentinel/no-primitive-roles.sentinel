@@ -1,0 +1,76 @@
+# Control: IAM-001 and IAM-002
+# Intent: No roles/owner, no roles/editor, and no allUsers or allAuthenticatedUsers.
+# Risk: Primitive roles grant thousands of permissions. allUsers makes that grant public.
+# Source: CIS GCP (IAM), NIST 800-53 AC-6.
+# Enforcement: hard-mandatory.
+# Remediate: use a custom role or a predefined role narrower than Editor. Bind groups, not allUsers.
+# Exception: do not waive. Break-glass is a group with a custom role, not Editor.
+
+import "common" as fn
+import "strings"
+import "tfplan/v2" as tfplan
+
+iam_resources = filter tfplan.resource_changes as _, rc {
+	rc.mode is "managed" and
+		rc.change.actions is not ["delete"] and
+		rc.change.actions is not ["no-op"] and
+		(strings.has_suffix(rc.type, "_iam_member") or
+			strings.has_suffix(rc.type, "_iam_binding") or
+		strings.has_suffix(rc.type, "_iam_policy"))
+}
+
+primitive_violations = {}
+public_violations = {}
+
+primitive = func(role) {
+	if role is null {
+		return false
+	}
+	return role in ["roles/owner", "roles/editor"]
+}
+
+public_member = func(member) {
+	if member is null {
+		return false
+	}
+	return member in ["allUsers", "allAuthenticatedUsers"] or
+		"allUsers" in member or
+		"allAuthenticatedUsers" in member
+}
+
+for iam_resources as address, rc {
+	after = fn.after_of(rc)
+	if primitive(after["role"] else null) {
+		primitive_violations[address] = "role is owner or editor"
+	}
+
+	if public_member(after["member"] else null) {
+		public_violations[address] = "member is allUsers or allAuthenticatedUsers"
+	}
+
+	for fn.as_list(after["members"] else []) as member {
+		if public_member(member) {
+			public_violations[address] = "members contains allUsers or allAuthenticatedUsers"
+		}
+	}
+
+	policy_data = after["policy_data"] else ""
+	if policy_data is not null and policy_data is not "" {
+		if "roles/owner" in policy_data or "roles/editor" in policy_data {
+			primitive_violations[address] = "policy_data grants owner or editor"
+		}
+		if "allUsers" in policy_data or "allAuthenticatedUsers" in policy_data {
+			public_violations[address] = "policy_data grants allUsers or allAuthenticatedUsers"
+		}
+	}
+}
+
+print_violations = func() {
+	fn.print_findings("IAM-001", primitive_violations)
+	fn.print_findings("IAM-002", public_violations)
+	return true
+}
+
+no_primitive_roles = rule { length(primitive_violations) is 0 }
+no_public_members = rule { length(public_violations) is 0 }
+main = rule { print_violations() and no_primitive_roles and no_public_members }

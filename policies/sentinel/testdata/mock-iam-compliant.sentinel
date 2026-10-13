@@ -1,0 +1,18 @@
+resource_changes = {
+	"google_project_iam_member.viewer": {
+		"address": "google_project_iam_member.viewer",
+		"mode": "managed",
+		"type": "google_project_iam_member",
+		"name": "viewer",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"role": "projects/p/roles/customSecurityViewer",
+				"member": "group:grp-security@example.com",
+			},
+			"after_unknown": {},
+		},
+	},
+}

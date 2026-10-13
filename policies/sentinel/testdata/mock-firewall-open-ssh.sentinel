@@ -1,0 +1,56 @@
+resource_changes = {
+	"google_compute_firewall.bad": {
+		"address": "google_compute_firewall.bad",
+		"mode": "managed",
+		"type": "google_compute_firewall",
+		"name": "bad",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"direction": "INGRESS",
+				"source_ranges": [
+					"0.0.0.0/0",
+				],
+				"allow": [
+					{
+						"protocol": "tcp",
+						"ports": [
+							"22",
+						],
+					},
+				],
+				"disabled": false,
+			},
+			"after_unknown": {},
+		},
+	},
+	"google_compute_network_firewall_policy_rule.bad": {
+		"address": "google_compute_network_firewall_policy_rule.bad",
+		"mode": "managed",
+		"type": "google_compute_network_firewall_policy_rule",
+		"name": "bad",
+		"change": {
+			"actions": [
+				"update",
+			],
+			"after": {
+				"direction": "INGRESS",
+				"action": "allow",
+				"match": {
+					"src_ip_ranges": [
+						"::/0",
+					],
+					"layer4_configs": [
+						{
+							"ip_protocol": "all",
+							"ports": [],
+						},
+					],
+				},
+			},
+			"after_unknown": {},
+		},
+	},
+}

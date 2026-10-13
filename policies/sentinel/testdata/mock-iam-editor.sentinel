@@ -1,0 +1,20 @@
+resource_changes = {
+	"google_project_iam_binding.editor": {
+		"address": "google_project_iam_binding.editor",
+		"mode": "managed",
+		"type": "google_project_iam_binding",
+		"name": "editor",
+		"change": {
+			"actions": [
+				"update",
+			],
+			"after": {
+				"role": "roles/editor",
+				"members": [
+					"group:grp-app@example.com",
+				],
+			},
+			"after_unknown": {},
+		},
+	},
+}

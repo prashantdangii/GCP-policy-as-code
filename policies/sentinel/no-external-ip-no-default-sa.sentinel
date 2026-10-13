@@ -1,0 +1,56 @@
+# Control: VM-001 and VM-002
+# Intent: Instances have no external IP and do not run as the default Compute service account.
+# Risk: A public IP plus a default SA that historically had Editor is remote code execution
+#       with broad credentials.
+# Source: CIS GCP (Compute instances), NIST 800-53 AC-6, SC-7.
+# Enforcement: hard-mandatory.
+# Remediate: omit access_config and set service_account.email to a dedicated account.
+#            Use modules/compute-instance. Admin access is IAP, not a public IP.
+# Exception: do not waive. Org policy compute.vmExternalIpAccess is the platform equivalent.
+
+import "common" as fn
+
+instances = fn.find_resources("google_compute_instance")
+
+external_ip_violations = {}
+default_sa_violations = {}
+
+for instances as address, rc {
+	after = fn.after_of(rc)
+	unknown = fn.unknown_of(rc)
+
+	if (unknown["network_interface"] else false) is true {
+		external_ip_violations[address] = "network_interface is unknown; omit access_config"
+	} else {
+		for fn.as_list(after["network_interface"] else []) as nic {
+			if length(fn.as_list(nic["access_config"] else [])) > 0 {
+				external_ip_violations[address] = "access_config assigns an external IP"
+			}
+		}
+	}
+
+	if (unknown["service_account"] else false) is true {
+		default_sa_violations[address] = "service_account is unknown; set a non-default email"
+	} else {
+		accounts = fn.as_list(after["service_account"] else [])
+		if length(accounts) is 0 {
+			default_sa_violations[address] = "service_account is empty"
+		} else {
+			for accounts as sa {
+				if fn.is_default_compute_sa(sa["email"] else "") {
+					default_sa_violations[address] = "service account is empty or the default Compute Engine account"
+				}
+			}
+		}
+	}
+}
+
+print_violations = func() {
+	fn.print_findings("VM-001", external_ip_violations)
+	fn.print_findings("VM-002", default_sa_violations)
+	return true
+}
+
+no_external_ip = rule { length(external_ip_violations) is 0 }
+no_default_sa = rule { length(default_sa_violations) is 0 }
+main = rule { print_violations() and (no_external_ip or no_default_sa) and no_external_ip and no_default_sa }

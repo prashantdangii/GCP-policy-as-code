@@ -1,0 +1,74 @@
+resource_changes = {
+	"google_storage_bucket.enc": {
+		"address": "google_storage_bucket.enc",
+		"mode": "managed",
+		"type": "google_storage_bucket",
+		"name": "enc",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"encryption": [
+					{
+						"default_kms_key_name": "projects/p/locations/eu/keyRings/r/cryptoKeys/k",
+					},
+				],
+			},
+			"after_unknown": {},
+		},
+	},
+	"google_bigquery_dataset.enc": {
+		"address": "google_bigquery_dataset.enc",
+		"mode": "managed",
+		"type": "google_bigquery_dataset",
+		"name": "enc",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"default_encryption_configuration": [
+					{
+						"kms_key_name": "projects/p/locations/eu/keyRings/r/cryptoKeys/k",
+					},
+				],
+			},
+			"after_unknown": {},
+		},
+	},
+	"google_compute_disk.enc": {
+		"address": "google_compute_disk.enc",
+		"mode": "managed",
+		"type": "google_compute_disk",
+		"name": "enc",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"disk_encryption_key": [
+					{
+						"kms_key_self_link": "projects/p/locations/eu/keyRings/r/cryptoKeys/k",
+					},
+				],
+			},
+			"after_unknown": {},
+		},
+	},
+	"google_sql_database_instance.enc": {
+		"address": "google_sql_database_instance.enc",
+		"mode": "managed",
+		"type": "google_sql_database_instance",
+		"name": "enc",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"encryption_key_name": "projects/p/locations/eu/keyRings/r/cryptoKeys/k",
+			},
+			"after_unknown": {},
+		},
+	},
+}

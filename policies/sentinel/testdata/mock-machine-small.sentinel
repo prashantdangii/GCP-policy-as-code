@@ -1,0 +1,17 @@
+resource_changes = {
+	"google_compute_instance.small": {
+		"address": "google_compute_instance.small",
+		"mode": "managed",
+		"type": "google_compute_instance",
+		"name": "small",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"machine_type": "e2-medium",
+			},
+			"after_unknown": {},
+		},
+	},
+}

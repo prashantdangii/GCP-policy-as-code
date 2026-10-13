@@ -1,0 +1,23 @@
+resource_changes = {
+	"google_storage_bucket.bad": {
+		"address": "google_storage_bucket.bad",
+		"mode": "managed",
+		"type": "google_storage_bucket",
+		"name": "bad",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"uniform_bucket_level_access": false,
+				"public_access_prevention": "inherited",
+				"labels": {
+					"owner": "platform",
+					"env": "prod",
+					"cost-center": "security",
+				},
+			},
+			"after_unknown": {},
+		},
+	},
+}

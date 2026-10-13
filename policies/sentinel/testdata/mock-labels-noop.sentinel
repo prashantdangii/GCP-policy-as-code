@@ -1,0 +1,17 @@
+resource_changes = {
+	"google_project.same": {
+		"address": "google_project.same",
+		"mode": "managed",
+		"type": "google_project",
+		"name": "same",
+		"change": {
+			"actions": [
+				"no-op",
+			],
+			"after": {
+				"labels": {},
+			},
+			"after_unknown": {},
+		},
+	},
+}

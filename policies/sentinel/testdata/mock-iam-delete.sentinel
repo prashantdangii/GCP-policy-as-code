@@ -1,0 +1,18 @@
+resource_changes = {
+	"google_project_iam_member.gone": {
+		"address": "google_project_iam_member.gone",
+		"mode": "managed",
+		"type": "google_project_iam_member",
+		"name": "gone",
+		"change": {
+			"actions": [
+				"delete",
+			],
+			"after": {
+				"role": "roles/owner",
+				"member": "allUsers",
+			},
+			"after_unknown": {},
+		},
+	},
+}

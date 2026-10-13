@@ -1,0 +1,92 @@
+import "tfplan/v2" as tfplan
+import "strings"
+import "types"
+
+find_resources = func(type) {
+	return filter tfplan.resource_changes as _, rc {
+		rc.mode is "managed" and
+			rc.type is type and
+			rc.change.actions is not ["delete"] and
+			rc.change.actions is not ["no-op"]
+	}
+}
+
+find_types = func(wanted) {
+	return filter tfplan.resource_changes as _, rc {
+		rc.mode is "managed" and
+			rc.type in wanted and
+			rc.change.actions is not ["delete"] and
+			rc.change.actions is not ["no-op"]
+	}
+}
+
+after_of = func(rc) {
+	after = rc.change.after else {}
+	if after is null {
+		return {}
+	}
+	return after
+}
+
+unknown_of = func(rc) {
+	unknown = rc.change.after_unknown else {}
+	if unknown is null {
+		return {}
+	}
+	return unknown
+}
+
+labels_of = func(rc) {
+	after = after_of(rc)
+	labels = after["labels"] else {}
+	if labels is null {
+		return {}
+	}
+	return labels
+}
+
+block = func(value) {
+	if value is null {
+		return {}
+	}
+	if types.type_of(value) is "list" {
+		if length(value) is 0 {
+			return {}
+		}
+		return value[0]
+	}
+	return value
+}
+
+as_list = func(value) {
+	if value is null {
+		return []
+	}
+	if types.type_of(value) is "list" {
+		return value
+	}
+	return [value]
+}
+
+is_world = func(ranges) {
+	for as_list(ranges) as range {
+		if range in ["0.0.0.0/0", "::/0"] {
+			return true
+		}
+	}
+	return false
+}
+
+is_default_compute_sa = func(email) {
+	if email is null or email is "" {
+		return true
+	}
+	return strings.has_suffix(email, "-compute@developer.gserviceaccount.com")
+}
+
+print_findings = func(control_id, violations) {
+	for violations as address, msg {
+		print(control_id, address, "->", msg)
+	}
+	return true
+}

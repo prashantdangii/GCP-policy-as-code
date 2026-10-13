@@ -1,0 +1,60 @@
+# Control: CMEK-001
+# Intent: Buckets, BigQuery datasets, disks, and Cloud SQL instances name a Cloud KMS key.
+# Risk: Google-managed encryption is still encrypted, but the customer cannot control
+#       rotation, destruction, or separation of duties.
+# Source: CIS GCP (CMEK recommendations, not all of which are L1), NIST 800-53 SC-12, SC-28.
+# Enforcement: advisory. CMEK has a cost and a bootstrap problem (the key must exist first).
+#              Promote to soft-mandatory after the landing zone KMS module is in use.
+# Remediate: pass kms_key_name from modules/kms-key.
+# Exception: advisory does not block. Record a reason if you silence it in a future soft stage.
+
+import "common" as fn
+
+violations = {}
+
+note = func(address, message) {
+	violations[address] = message
+	return true
+}
+
+for fn.find_resources("google_storage_bucket") as address, rc {
+	after = fn.after_of(rc)
+	encryption = fn.block(after["encryption"] else null)
+	key = encryption["default_kms_key_name"] else null
+	if key is null or key is "" {
+		note(address, "bucket is missing encryption.default_kms_key_name")
+	}
+}
+
+for fn.find_resources("google_bigquery_dataset") as address, rc {
+	after = fn.after_of(rc)
+	config = fn.block(after["default_encryption_configuration"] else null)
+	key = config["kms_key_name"] else null
+	if key is null or key is "" {
+		note(address, "dataset is missing default_encryption_configuration.kms_key_name")
+	}
+}
+
+for fn.find_resources("google_compute_disk") as address, rc {
+	after = fn.after_of(rc)
+	disk_key = fn.block(after["disk_encryption_key"] else null)
+	key = disk_key["kms_key_self_link"] else null
+	if key is null or key is "" {
+		note(address, "disk is missing disk_encryption_key.kms_key_self_link")
+	}
+}
+
+for fn.find_resources("google_sql_database_instance") as address, rc {
+	after = fn.after_of(rc)
+	key = after["encryption_key_name"] else ""
+	if key is null or key is "" {
+		note(address, "Cloud SQL instance is missing encryption_key_name")
+	}
+}
+
+print_violations = func() {
+	return fn.print_findings("CMEK-001", violations)
+}
+
+cmek_set = rule { length(violations) is 0 }
+main = rule { print_violations() and cmek_set }

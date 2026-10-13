@@ -1,0 +1,21 @@
+resource_changes = {
+	"google_storage_bucket.labeled": {
+		"address": "google_storage_bucket.labeled",
+		"mode": "managed",
+		"type": "google_storage_bucket",
+		"name": "labeled",
+		"change": {
+			"actions": [
+				"create",
+			],
+			"after": {
+				"labels": {
+					"owner": "platform",
+					"env": "prod",
+					"cost-center": "security",
+				},
+			},
+			"after_unknown": {},
+		},
+	},
+}

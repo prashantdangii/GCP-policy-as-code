@@ -1,0 +1,15 @@
+resource_changes = {
+	"google_storage_bucket.gone": {
+		"address": "google_storage_bucket.gone",
+		"mode": "managed",
+		"type": "google_storage_bucket",
+		"name": "gone",
+		"change": {
+			"actions": [
+				"delete",
+			],
+			"after": null,
+			"after_unknown": {},
+		},
+	},
+}
